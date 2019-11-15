@@ -252,16 +252,19 @@ public class GhostAI : MonoBehaviour {
 		}
 		return true;
 	}
+    /* function to make ghost chase pacMan */
     void Chase() {
         // list of possible directions ghost can move 
         Vector2[] possibleDirections = new Vector2[4];
         // holds the minimum distance any step on the map will make between the ghost and pacMan
         float leastDistance = 10000f;
-        // holds the direction that steppin
+        // holds the direction that stepping in would result in being closer to pacMan
         Vector2 leastDist = Vector2.zero;
+        // index of the opposite direction in our list of directions
         int leastIndex = -1;
         for(int i = 0; i < 4; i++) {
             //Vector2 dir = new Vector2(transform.position.x + num2vec(i).x, transform.position.y + num2vec(i).y);
+            // if you can move that way, add to list of possible moves 
             if (move.checkDirectionClear(num2vec(i))) {
                // float distance = getDistance(dir, pacMan.transform.position);
                 possibleDirections[i] = new Vector2(num2vec(i).x, num2vec(i).y);
@@ -276,6 +279,7 @@ public class GhostAI : MonoBehaviour {
             }
             
         }
+        // loop through the list of possible moves and get the move with the smallest distance to pacMan
         for(int i = 0; i < possibleDirections.Length; i++) {
             Vector2 dir = new Vector2(transform.position.x + possibleDirections[i].x, transform.position.y + possibleDirections[i].y);
             float distance = getDistance(dir, pacMan.transform.position);
@@ -285,14 +289,14 @@ public class GhostAI : MonoBehaviour {
                 leastIndex = i;
             }
         }
-
+        // if we can move that way (sanity check) move that way 
         if (move.checkDirectionClear(leastDist)) {
             move.move(leastDist);
             prevDir = letterDirections[leastIndex];
             //prevDir = letterDirections[leastIndex];
             Debug.Log("trying to go " + letterDirections[leastIndex]);
             Debug.Log("with this many possible dirs " + possibleDirections.Length);
-        } else {
+        } else { // 
            
         }
 
