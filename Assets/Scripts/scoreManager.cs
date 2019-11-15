@@ -30,6 +30,8 @@ public class scoreManager : MonoBehaviour {
     public AudioClip pacmanDie;
 
     AudioSource aud;
+    [Header("our variables")]
+    public int[] scores;
 
 	// Use this for initialization
 	void Start ()
@@ -39,7 +41,7 @@ public class scoreManager : MonoBehaviour {
         newlife = 0;
         lives = 4;
         scoreText = GameObject.Find("Score").GetComponent<Text>();
-        scoreText.text = ("Game"+'\n' + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", score));
+        //scoreText.text = ("Game"+'\n' + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", score));
         
         highText = GameObject.Find("HighScore").GetComponent<Text>();
         if (PlayerPrefs.HasKey("highscore"))
@@ -131,9 +133,11 @@ public class scoreManager : MonoBehaviour {
     public void updateScore()
     {
         score += 1;
+        Debug.Log("score " + score);
         newlife += 1;
-		scoreText.text = "Game"+'\n' + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", score);
-        if(newlife > 10000 && !extra)
+        //scoreText.text = "Game"+'\n' + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", score);
+        scoreText.text = "Game\n" + "Score\n" + string.Format("{0}", score);
+        if (newlife > 10000 && !extra)
         {
             newlife = 0;
             lives += 1;
