@@ -95,7 +95,10 @@ public class GhostAI : MonoBehaviour {
 	public bool chooseDirection = true;
 	public int[] choices ;
 	public float choice;
-
+    /* */
+    public bool canChase = false;
+    public char[] letterDirections;
+    char prevDir;
 	public enum State{
 		waiting,
 		entering,
@@ -118,6 +121,8 @@ public class GhostAI : MonoBehaviour {
 		gate = GameObject.Find("Gate(Clone)");
 		pacMan = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
 		releaseTimeReset = releaseTime;
+        letterDirections = new char[4] { 'd', 'l', 'u', 'r' };
+        prevDir = '_';
 	}
 
 	public void restart(){
@@ -134,7 +139,10 @@ public class GhostAI : MonoBehaviour {
     /// 
     /// </summary>
 	void Update () {
-		switch (_state) {
+        if(ghostID == PINKY || ghostID == CLYDE || ghostID == INKY) {
+            return;
+        }
+        switch (_state) {
 		case(State.waiting):
 
             // below is some sample code showing how you deal with animations, etc.
@@ -161,6 +169,7 @@ public class GhostAI : MonoBehaviour {
 
 		case(State.leaving):
 
+                _state = State.active;
 			break;
 
 		case(State.active):
@@ -168,8 +177,10 @@ public class GhostAI : MonoBehaviour {
                 // etc.
                 // most of your AI code will be placed here!
             }
-            // etc.
-
+                // etc.
+                //while(move.checkDirectionClear(num2vec))
+                this.target = pacMan;
+                canChase = true;
 			break;
 
 		case State.entering:
@@ -192,21 +203,42 @@ public class GhostAI : MonoBehaviour {
 
             break;
 		}
-	}
+        if (canChase) {
+
+            Chase();
+            // get pacmans position
+            // get current ghost position
+            // see, with options available, which move (up, left, down, right) would be closest
+            // if you can move that way, move 
+            // make sure you make the opposite way false, i.e you cant move backwards 
+
+
+
+
+
+        }
+
+    }
+    /*
+    private void FixedUpdate() {
+        
+ 
+    }
+    */
 
     // Utility routines
 
-	Vector2 num2vec(int n){
+    Vector2 num2vec(int n){
         switch (n)
         {
             case 0:
-                return new Vector2(0, 1);
+                return new Vector2(0, 1); // up
             case 1:
-    			return new Vector2(1, 0);
+    			return new Vector2(1, 0); // right
 		    case 2:
-			    return new Vector2(0, -1);
+			    return new Vector2(0, -1); // down
             case 3:
-			    return new Vector2(-1, 0);
+			    return new Vector2(-1, 0); // left
             default:    // should never happen
                 return new Vector2(0, 0);
         }
@@ -220,4 +252,98 @@ public class GhostAI : MonoBehaviour {
 		}
 		return true;
 	}
+    void Chase() {
+        // list of possible directions ghost can move 
+        Vector2[] possibleDirections = new Vector2[4];
+        // holds the minimum distance any step on the map will make between the ghost and pacMan
+        float leastDistance = 10000f;
+        // holds the direction that steppin
+        Vector2 leastDist = Vector2.zero;
+        int leastIndex = -1;
+        for(int i = 0; i < 4; i++) {
+            //Vector2 dir = new Vector2(transform.position.x + num2vec(i).x, transform.position.y + num2vec(i).y);
+            if (move.checkDirectionClear(num2vec(i))) {
+               // float distance = getDistance(dir, pacMan.transform.position);
+                possibleDirections[i] = new Vector2(num2vec(i).x, num2vec(i).y);
+                /*
+                if (distance < leastDistance) {
+
+                    leastDistance = distance;
+                    leastDist = new Vector2(num2vec(i).x, num2vec(i).y);
+                    leastIndex = i;
+                }
+              */  
+            }
+            
+        }
+        for(int i = 0; i < possibleDirections.Length; i++) {
+            Vector2 dir = new Vector2(transform.position.x + possibleDirections[i].x, transform.position.y + possibleDirections[i].y);
+            float distance = getDistance(dir, pacMan.transform.position);
+            if (distance < leastDistance) {
+                leastDistance = distance;
+                leastDist = new Vector2(num2vec(i).x, num2vec(i).y);
+                leastIndex = i;
+            }
+        }
+
+        if (move.checkDirectionClear(leastDist)) {
+            move.move(leastDist);
+            prevDir = letterDirections[leastIndex];
+            //prevDir = letterDirections[leastIndex];
+            Debug.Log("trying to go " + letterDirections[leastIndex]);
+            Debug.Log("with this many possible dirs " + possibleDirections.Length);
+        } else {
+           
+        }
+
+
+    }
+    /*
+    void Chase() {
+
+        Vector2 moveTo = Vector2.zero;
+        int distIndex = -1;
+        // list of possible directions ghost can go 
+        Vector2[] possibleDirections = new Vector2[4];
+        /* loop through all directions and, if they are possible,
+         * i.e the ghost wouldn't move backwards or collide into something,
+         * add to the list of possible directions 
+        for (int i = 0; i < 4; i++) {
+            if(move.checkDirectionClear(num2vec(i)) && !prevDirs[i]) {
+        //        Debug.Log(num2vec(i) + " the ind " + i);
+                possibleDirections[i] = num2vec(i);
+            }
+        }
+        // minimum distance to pacMan from any of the possible directions 
+        float minDistance = 1000000f;
+        for(int i = 0; i < possibleDirections.Length; i++) {
+            if (possibleDirections[i] != Vector2.zero) {
+                Vector2 nextMove = new Vector2(this.transform.position.x + possibleDirections[i].x, this.transform.position.y + possibleDirections[i].y);
+                float distance = getDistance(nextMove, target.transform.position);
+                if(distance < minDistance) {
+                    minDistance = distance;
+                    moveTo = possibleDirections[i];
+                    distIndex = i;
+
+                }
+            }
+            
+        }
+        if(distIndex != -1) {
+            if(ghostID == BLINKY){ Debug.Log(moveTo); }
+            prevDirs = new bool[] { false, false, false, false };
+            prevDirs[distIndex] = true;
+            move.move(moveTo);
+        }
+
+
+    }
+    */
+    float getDistance(Vector2 ghostPos, Vector2 targetPos) {
+
+        float dx = ghostPos.x - targetPos.x;
+        float dy = ghostPos.y - targetPos.y;
+        float distance = Mathf.Sqrt(dx * dx + dy * dy);
+        return distance;
+    }
 }
