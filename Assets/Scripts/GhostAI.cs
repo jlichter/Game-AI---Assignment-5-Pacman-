@@ -53,7 +53,7 @@ public class GhostAI : MonoBehaviour {
 
 	public float releaseTime = 0f;          // This could be a tunable number
 	private float releaseTimeReset = 0f;
-	public float waitTime = 0f;             // This could be a tunable number
+	public float waitTime = 1f;             // This could be a tunable number
     private const float ogWaitTime = .1f;
 	public int range = 0;                   // This could be a tunable number
 
@@ -97,8 +97,10 @@ public class GhostAI : MonoBehaviour {
 	public float choice;
     /* */
     public bool canChase = false;
+    public char[] currentDirections;
     public char[] letterDirections;
     char prevDir;
+    char currentDir;
 	public enum State{
 		waiting,
 		entering,
@@ -121,7 +123,9 @@ public class GhostAI : MonoBehaviour {
 		gate = GameObject.Find("Gate(Clone)");
 		pacMan = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
 		releaseTimeReset = releaseTime;
+        currentDirections = new char[4] { 'u', 'r', 'd', 'l' };
         letterDirections = new char[4] { 'd', 'l', 'u', 'r' };
+       // currentDir
         prevDir = '_';
 	}
 
@@ -168,8 +172,12 @@ public class GhostAI : MonoBehaviour {
 
 
 		case(State.leaving):
-
-                _state = State.active;
+                if(ghostID == BLINKY) _state = State.active;
+                /*
+                if (ghostID == PINKY) {
+                    this.target = 
+                }
+                */
 			break;
 
 		case(State.active):
@@ -177,10 +185,9 @@ public class GhostAI : MonoBehaviour {
                 // etc.
                 // most of your AI code will be placed here!
             }
-                // etc.
-                //while(move.checkDirectionClear(num2vec))
-                this.target = pacMan;
-                canChase = true;
+            // etc.
+            this.target = pacMan; // make the target pacMan
+            canChase = true; // start the chase 
 			break;
 
 		case State.entering:
@@ -205,7 +212,7 @@ public class GhostAI : MonoBehaviour {
 		}
         if (canChase) {
 
-            Chase();
+            StartCoroutine(Chase());
             // get pacmans position
             // get current ghost position
             // see, with options available, which move (up, left, down, right) would be closest
@@ -253,7 +260,9 @@ public class GhostAI : MonoBehaviour {
 		return true;
 	}
     /* function to make ghost chase pacMan */
-    void Chase() {
+    IEnumerator Chase() {
+
+        //float time = 0f;
         // list of possible directions ghost can move 
         Vector2[] possibleDirections = new Vector2[4];
         // holds the minimum distance any step on the map will make between the ghost and pacMan
@@ -263,86 +272,39 @@ public class GhostAI : MonoBehaviour {
         // index of the opposite direction in our list of directions
         int leastIndex = -1;
         for(int i = 0; i < 4; i++) {
-            //Vector2 dir = new Vector2(transform.position.x + num2vec(i).x, transform.position.y + num2vec(i).y);
-            // if you can move that way, add to list of possible moves 
-            if (move.checkDirectionClear(num2vec(i))) {
-               // float distance = getDistance(dir, pacMan.transform.position);
-                possibleDirections[i] = new Vector2(num2vec(i).x, num2vec(i).y);
-                /*
+            // if you can move that way and you wouldnt be going backwards, add to list of possible directions 
+            if (move.checkDirectionClear(num2vec(i)) && prevDir != currentDirections[i]) {
+                possibleDirections[i] = new Vector2(num2vec(i).x, num2vec(i).y);     
+            }
+        }
+        // loop through the list of possible moves and get the move with the smallest distance to pacMan
+        for(int i = 0; i < possibleDirections.Length; i++) {
+            if(possibleDirections[i] != Vector2.zero) {
+                // get the position of the tile 
+                Vector2 dir = new Vector2(transform.position.x + possibleDirections[i].x, transform.position.y + possibleDirections[i].y);
+                // get the distance from pacMan
+                float distance = getDistance(dir, target.transform.position);
+                // reset the smallest distance if this is the closest tile to PacMan
                 if (distance < leastDistance) {
-
                     leastDistance = distance;
                     leastDist = new Vector2(num2vec(i).x, num2vec(i).y);
                     leastIndex = i;
                 }
-              */  
-            }
-            
-        }
-        // loop through the list of possible moves and get the move with the smallest distance to pacMan
-        for(int i = 0; i < possibleDirections.Length; i++) {
-            Vector2 dir = new Vector2(transform.position.x + possibleDirections[i].x, transform.position.y + possibleDirections[i].y);
-            float distance = getDistance(dir, pacMan.transform.position);
-            if (distance < leastDistance) {
-                leastDistance = distance;
-                leastDist = new Vector2(num2vec(i).x, num2vec(i).y);
-                leastIndex = i;
             }
         }
         // if we can move that way (sanity check) move that way 
         if (move.checkDirectionClear(leastDist)) {
+            // this is temporary .. thought waiting a bit before reassigning previous direction would make the ghost stop moving backwards, but
+            //not really working 
+            yield return new WaitForSeconds(0.1f);
             move.move(leastDist);
             prevDir = letterDirections[leastIndex];
-            //prevDir = letterDirections[leastIndex];
-            Debug.Log("trying to go " + letterDirections[leastIndex]);
-            Debug.Log("with this many possible dirs " + possibleDirections.Length);
-        } else { // 
-           
+           // testing statement Debug.Log("can't go this way " + prevDir + " and going this way " + currentDirections[leastIndex]);
         }
 
 
     }
-    /*
-    void Chase() {
-
-        Vector2 moveTo = Vector2.zero;
-        int distIndex = -1;
-        // list of possible directions ghost can go 
-        Vector2[] possibleDirections = new Vector2[4];
-        /* loop through all directions and, if they are possible,
-         * i.e the ghost wouldn't move backwards or collide into something,
-         * add to the list of possible directions 
-        for (int i = 0; i < 4; i++) {
-            if(move.checkDirectionClear(num2vec(i)) && !prevDirs[i]) {
-        //        Debug.Log(num2vec(i) + " the ind " + i);
-                possibleDirections[i] = num2vec(i);
-            }
-        }
-        // minimum distance to pacMan from any of the possible directions 
-        float minDistance = 1000000f;
-        for(int i = 0; i < possibleDirections.Length; i++) {
-            if (possibleDirections[i] != Vector2.zero) {
-                Vector2 nextMove = new Vector2(this.transform.position.x + possibleDirections[i].x, this.transform.position.y + possibleDirections[i].y);
-                float distance = getDistance(nextMove, target.transform.position);
-                if(distance < minDistance) {
-                    minDistance = distance;
-                    moveTo = possibleDirections[i];
-                    distIndex = i;
-
-                }
-            }
-            
-        }
-        if(distIndex != -1) {
-            if(ghostID == BLINKY){ Debug.Log(moveTo); }
-            prevDirs = new bool[] { false, false, false, false };
-            prevDirs[distIndex] = true;
-            move.move(moveTo);
-        }
-
-
-    }
-    */
+  
     float getDistance(Vector2 ghostPos, Vector2 targetPos) {
 
         float dx = ghostPos.x - targetPos.x;
