@@ -133,7 +133,6 @@ public class scoreManager : MonoBehaviour {
     public void updateScore()
     {
         score += 1;
-        Debug.Log("score " + score);
         newlife += 1;
         //scoreText.text = "Game"+'\n' + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", score);
         scoreText.text = "Game\n" + "Score\n" + string.Format("{0}", score);
