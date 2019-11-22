@@ -100,12 +100,13 @@ public class GhostAI : MonoBehaviour {
     public bool isLeaving = false;
     public char[] currentDirections;
     public char[] previousDirections;
-    char prevDir;
-    int prevIndex;
-    char prevPrevDir;
-    Vector2 previousLoc;
+    char backwardsDirection;
+    int moveIndex;
+    Vector2 currentTile;
+    Vector2 targetTile;
     List<Vector2> pacManPath;
     int count;
+    bool firstMove;
    
 	public enum State{
 		waiting,
@@ -131,9 +132,9 @@ public class GhostAI : MonoBehaviour {
 		releaseTimeReset = releaseTime;
         currentDirections = new char[4] { 'u', 'r', 'd', 'l' };
         previousDirections = new char[4] { 'd', 'l', 'u', 'r' };
-        prevDir = '_';
-        prevPrevDir = '_';
+        backwardsDirection = '_';
         pacManPath = new List<Vector2>();
+        currentTile = transform.position;
         count = 0;
 	}
 
@@ -181,9 +182,12 @@ public class GhostAI : MonoBehaviour {
 
 
 		case(State.leaving):
-                if(ghostID == BLINKY) _state = State.active;
-                //if(ghostID == PINKY) 
-                
+                if (ghostID == BLINKY) {
+                    this.target = pacMan; // make the target pacMan 
+                    _state = State.active;
+                }
+                                                            //if(ghostID == PINKY) 
+
                 if (ghostID == PINKY) {
                     Debug.Log("heres pinkys pos " + transform.position);
                     Debug.Log("heres the gate pos " + gate.transform.position);
@@ -198,25 +202,35 @@ public class GhostAI : MonoBehaviour {
 		case(State.active):
             if (dead) {
                     canChase = false;
-                    _state = State.entering;
+                   
                     // etc.
                 // most of your AI code will be placed here!
             }
-            // etc.
-            if(ghostID == BLINKY) {
-                this.target = pacMan; // make the target pacMan
-                Chase();              
-                    //  canChase = true; // start the chase 
-            }
-            if(ghostID == PINKY) {
-                Chase();
-                    // canChase = true;
-            }
+                if (this.fleeing) {
+                    _state = State.fleeing;
+                } else {
+
+                    // etc.
+                    if (ghostID == BLINKY) {
+                        
+                             Chase();
+                              canChase = true; // start the chase 
+                        }
+                       
+                    }
+                    if (ghostID == PINKY) {
+                        // Chase();
+                        // canChase = true;
+                    }
+                
+             
 			break;
 
 		case State.entering:
 
-            // Leaving this code in here for you.
+                
+                /*
+                // Leaving this code in here for you.
 			move._dir = Movement.Direction.still;
 
 			if (transform.position.x < 13.48f || transform.position.x > 13.52) {
@@ -231,8 +245,15 @@ public class GhostAI : MonoBehaviour {
 				gameObject.GetComponent<Animator>().SetBool("Running", true);
 				_state = State.waiting;
 			}
+            */
 
             break;
+            case State.fleeing:
+
+                this.target = gate;
+               // Chase();
+
+                break;
 		}
 
      
@@ -272,25 +293,20 @@ public class GhostAI : MonoBehaviour {
 		}
 		return true;
 	}
-    /* function to make ghost chase pacMan */
-    void Chase() {
     
-        if(ghostID == PINKY) { // for pinky, always have to get tile two head of pacMan
+    // function to make ghost chase pacMan 
+    void Chase() {
+        
+        if (ghostID == PINKY && _state != State.entering) { // for pinky, always have to get tile two head of pacMan
             this.target = twoAhead();
         }
         Vector2 nextTile = Vector2.zero;
-        if(prevDir != '_') {
-            int ind = System.Array.IndexOf(previousDirections, prevDir);
+        if(backwardsDirection != '_') {
+            int ind = System.Array.IndexOf(previousDirections, backwardsDirection);
           //  Debug.Log("can't go back this way " + prevDir + " and we are considering this " + currentDirections[ind]);
             nextTile = new Vector2(transform.position.x + num2vec(ind).x, transform.position.y + num2vec(ind).y);
         }
-        /* todo:
-         * if the ghost had a previous direction, it means that it was moving in a direction.
-         * get the index of the direction the ghost is currently moving in current directions,
-         * and look at the tile one ahead of that direction.
-         * make sure you check that that tile wouldn't be a wall or over the scope of the map.
-         * make a decision on where to go next based off that tile location!
-         * */
+        
          // list of possible directions ghost can move 
         Vector2[] possibleDirections = new Vector2[4];
         // holds the minimum distance any step on the map will make between the ghost and pacMan
@@ -301,7 +317,7 @@ public class GhostAI : MonoBehaviour {
         int leastIndex = -1;
         for (int i = 0; i < 4; i++) {
             // if you can move that way and you wouldnt be going backwards, add to list of possible directions 
-            if (move.checkDirectionClear(num2vec(i)) && prevDir != currentDirections[i]) {
+            if (move.checkDirectionClear(num2vec(i)) && backwardsDirection != currentDirections[i]) {
                 possibleDirections[i] = new Vector2(num2vec(i).x, num2vec(i).y);
             }
         }
@@ -333,25 +349,25 @@ public class GhostAI : MonoBehaviour {
             // this is temporary .. thought waiting a bit before reassigning previous direction would make the ghost stop moving backwards, but
             //not really working 
             //  Debug.Log("can't go this way " + prevDir + " and going this way " + currentDirections[leastIndex]);
-            if (prevDir != '_') {
-                if (transform.position.x != (int)transform.position.x && transform.position.y != (int)transform.position.y) {
-                    Vector2 previousDist = new Vector2(num2vec(prevIndex).x, num2vec(prevIndex).y);
-                    move.move(leastDist);
-                    return;
-                }
-            }
-            prevDir = previousDirections[leastIndex];
-            Vector2 newDir = new Vector2((int)transform.position.x + (int)leastDist.x, (int)transform.position.y + leastDist.y);
-            if(ghostID == BLINKY)   Debug.Log(" new direction " + newDir);
-            prevIndex = leastIndex;
             
+            backwardsDirection = previousDirections[leastIndex];
+            Vector2 newDir = new Vector2((int)transform.position.x + (int)leastDist.x, (int)transform.position.y + leastDist.y);
+           // if (ghostID == BLINKY) Debug.Log(" new direction " + newDir);
+            moveIndex = leastIndex;
             move.move(leastDist);
-           
-           
+            /*
+            while (transform.position.x != newDir.x && transform.position.y != newDir.y) {
+                move.move(leastDist);
+            }
+            */
+            
+
         }
               
        
     }
+    
+
     /* function to return a tile two ahead of pacMan's current direction of movement */
     public GameObject twoAhead() {
         GameObject newTarget = new GameObject();
