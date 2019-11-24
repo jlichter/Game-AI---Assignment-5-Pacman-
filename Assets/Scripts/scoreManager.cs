@@ -50,12 +50,21 @@ public class scoreManager : MonoBehaviour {
         highText = GameObject.Find("HighScore").GetComponent<Text>();
         totalPellets = GameObject.FindGameObjectsWithTag("pellet").Length; // Get the total # of pellets
 
+        if (PlayerPrefs.HasKey("score")) {
+            score = PlayerPrefs.GetInt("score");
+        }
+        else {
+            score = 0;
+        }
+
         if (PlayerPrefs.HasKey("highscore")) {
             highscore = PlayerPrefs.GetInt("highscore");
         }
         else {
             highscore = 0;
         }
+
+
         highText.text = "High" + "\n" + "Score" + '\n' + string.Format("{0:0\n0\n0\n0}", highscore);
 
         pacman = GameObject.Find("PacMan(Clone)") ? GameObject.Find("PacMan(Clone)") : GameObject.Find("PacMan 1(Clone)");
@@ -251,32 +260,26 @@ public class scoreManager : MonoBehaviour {
     public void NextLevel() {
         Debug.Log("Next level");
         powerPellet = false;
-        //Time.timeScale = 0f;
-        //yield return new WaitForSecondsRealtime(3f);
         Restart();
         //gameWon.SetActive(true);
         level++;
-        int prevScore = PlayerPrefs.GetInt("score");
-        Debug.Log("Prev Score: " + prevScore+" | "+"Score: " + score);
-            //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            SceneManager.LoadScene("GameScene 1");
-            Time.timeScale = 1f;
-            score = prevScore; // Score carries over
-            totalPellets = GameObject.FindGameObjectsWithTag("pellet").Length;
-            clyde.GetComponent<GhostAI>()._state = GhostAI.State.active;
-            pinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
-            inky.GetComponent<GhostAI>()._state = GhostAI.State.active;
-            blinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+        PlayerPrefs.SetInt("score", score); // Save before restart
+        PlayerPrefs.Save();
 
-            // Increase Ghost speed
-            clyde.GetComponent<Movement>().MSpeed++;
-            pinky.GetComponent<Movement>().MSpeed++;
-            inky.GetComponent<Movement>().MSpeed++;
-            blinky.GetComponent<Movement>().MSpeed++;
-            //gameWon.SetActive(false);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Restart same map
+        SceneManager.LoadScene("GameScene 1"); // Switch to other map
+        Time.timeScale = 1f;
+        totalPellets = GameObject.FindGameObjectsWithTag("pellet").Length;
+        clyde.GetComponent<GhostAI>()._state = GhostAI.State.active;
+        pinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+        inky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+        blinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
 
-        //StartCoroutine("Begin");
+        // Increase Ghost speed
+        clyde.GetComponent<Movement>().MSpeed++;
+        pinky.GetComponent<Movement>().MSpeed++;
+        inky.GetComponent<Movement>().MSpeed++;
+        blinky.GetComponent<Movement>().MSpeed++;
         //gameWon.SetActive(false);
-
     }
 }
