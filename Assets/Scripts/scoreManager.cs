@@ -2,24 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class scoreManager : MonoBehaviour {
 
     public GameObject gameOver;
+    public GameObject gameWon;
     public GameObject[] liveSprite;
     public GameObject inky;
     public GameObject clyde;
     public GameObject pinky;
     public GameObject blinky;
     public GameObject pacman;
+
     private Text scoreText;
     private Text highText;
+
+    public int level;
     private int score;
     private int highscore;
     private int newlife;
     private int lives;
     private bool extra = false;
     public bool powerPellet = false;
+    public int totalPellets;
     private int ghostCount = 0;
     private float timer = 9f;
     private bool blinking = false;
@@ -41,8 +47,9 @@ public class scoreManager : MonoBehaviour {
         lives = 4;
         highscore = 0;
         scoreText = GameObject.Find("Score").GetComponent<Text>();
-
         highText = GameObject.Find("HighScore").GetComponent<Text>();
+        totalPellets = GameObject.FindGameObjectsWithTag("pellet").Length; // Get the total # of pellets
+
         if (PlayerPrefs.HasKey("highscore")) {
             highscore = PlayerPrefs.GetInt("highscore");
         }
@@ -61,7 +68,13 @@ public class scoreManager : MonoBehaviour {
     }
 
     private void Update() {
-        if (powerPellet) {
+        if (totalPellets <= 0) { // Start over
+            NextLevel();
+        }
+        else if (powerPellet) {
+            if (totalPellets <= 0) { // If powerpellet was last 
+                NextLevel();
+            }
             if (timer <= 3f && !blinking) {
                 blinking = true;
                 inky.GetComponent<Animator>().SetBool("Flicker", true);
@@ -153,6 +166,8 @@ public class scoreManager : MonoBehaviour {
                 //game over motherfucker.
                 Time.timeScale = 0f;
                 gameOver.SetActive(true);
+                //gameWon.SetActive(false);
+                level = 0;
             }
         }
         else {
@@ -233,7 +248,35 @@ public class scoreManager : MonoBehaviour {
         blinky.GetComponent<GhostAI>().restart();
     }
 
-    void DotsConsumed() {
+    public void NextLevel() {
+        Debug.Log("Next level");
+        powerPellet = false;
+        //Time.timeScale = 0f;
+        //yield return new WaitForSecondsRealtime(3f);
+        Restart();
+        //gameWon.SetActive(true);
+        level++;
+        int prevScore = PlayerPrefs.GetInt("score");
+        Debug.Log("Prev Score: " + prevScore+" | "+"Score: " + score);
+            //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            SceneManager.LoadScene("GameScene 1");
+            Time.timeScale = 1f;
+            score = prevScore; // Score carries over
+            totalPellets = GameObject.FindGameObjectsWithTag("pellet").Length;
+            clyde.GetComponent<GhostAI>()._state = GhostAI.State.active;
+            pinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+            inky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+            blinky.GetComponent<GhostAI>()._state = GhostAI.State.active;
+
+            // Increase Ghost speed
+            clyde.GetComponent<Movement>().MSpeed++;
+            pinky.GetComponent<Movement>().MSpeed++;
+            inky.GetComponent<Movement>().MSpeed++;
+            blinky.GetComponent<Movement>().MSpeed++;
+            //gameWon.SetActive(false);
+
+        //StartCoroutine("Begin");
+        //gameWon.SetActive(false);
 
     }
 }
