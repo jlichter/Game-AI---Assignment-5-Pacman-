@@ -34,7 +34,8 @@ public class pelletCollision : MonoBehaviour {
 		if (collision.tag == "pellet") {
             aud.Play();
 			Destroy (collision.gameObject);
-			gameManager.SendMessage("updateScore");
+            gameManager.SendMessage("updateScore");
+            gameManager.GetComponent<scoreManager>().totalPellets--; // Decrement total number of pellets
 		}
 
         if (collision.tag == "powerpellet")
@@ -83,9 +84,9 @@ public class pelletCollision : MonoBehaviour {
 			if (gameManager.GetComponent<scoreManager>().powerPellet && collision.GetComponent<GhostAI>().fleeing)
             {
                 collision.GetComponent<Animator>().SetBool("Dead", true);
-				collision.GetComponent<GhostAI> ().dead = true;
-				collision.GetComponent<GhostAI> ().fleeing = false;
-				collision.GetComponent<Movement> ().MSpeed = 7.5f;
+				collision.GetComponent<GhostAI>().dead = true;
+				collision.GetComponent<GhostAI>().fleeing = false;
+				collision.GetComponent<Movement>().MSpeed = 7.5f;
 				collision.gameObject.GetComponent<CircleCollider2D> ().enabled = false;
                 StartCoroutine("EatGhost");
                 //set state to path find back to start
