@@ -242,6 +242,7 @@ public class GhostAI : MonoBehaviour {
         switch (_state) {
             case (State.waiting):
                 move.ghostAIState = WAITING;
+                gameObject.GetComponent<CircleCollider2D>().enabled = true;
                 // below is some sample code showing how you deal with animations, etc.
                 move._dir = Movement.Direction.still;
                 if (releaseTime <= 0f) {
@@ -268,6 +269,7 @@ public class GhostAI : MonoBehaviour {
             case (State.leaving):
                 move.ghostAIState = LEAVING;
                 Debug.Log("LEAVING" + transform.position);
+                gameObject.GetComponent<CircleCollider2D>().enabled = true;
                 if (dead) dead = false;
                 if (transform.position.x < 13.48f || transform.position.x > 13.52) {
                     transform.position = Vector3.Lerp(transform.position, new Vector3(13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
@@ -285,10 +287,13 @@ public class GhostAI : MonoBehaviour {
             case (State.active):
                 move.ghostAIState = ACTIVE;
                 Debug.Log("CHASING" + transform.position);
+                gameObject.GetComponent<CircleCollider2D>().enabled = true;
                 if (dead) {
-                    canChase = false;
+                    //canChase = false;
                     releaseTime = 2f;
                     this.gameObject.transform.position = new Vector3(13, -14, -2);
+       
+
                     _state = State.entering;
                     // etc.
                     // most of your AI code will be placed here!
@@ -296,6 +301,7 @@ public class GhostAI : MonoBehaviour {
 
                 if (this.fleeing) {
                     _state = State.fleeing;
+                    
                 }
 
                 else {
@@ -330,28 +336,27 @@ public class GhostAI : MonoBehaviour {
 
             case State.entering:
                 move.ghostAIState = ENTERING;
-  
-                // Leaving this code in here for you.
-			move._dir = Movement.Direction.still;
+                            // Leaving this code in here for you.
+                move._dir = Movement.Direction.still;
 
-			if (transform.position.x < 13.48f || transform.position.x > 13.52) {
-				//print("GOING LEFT OR RIGHT");
-				transform.position = Vector3.Lerp (transform.position, new Vector3 (13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
-			} else if (transform.position.y > -13.99f || transform.position.y < -14.01f) {
-				gameObject.GetComponent<Animator>().SetInteger ("Direction", 2);
-				transform.position = Vector3.Lerp (transform.position, new Vector3 (transform.position.x, -14f, transform.position.z), 3f * Time.deltaTime);
-			} else {
-				fleeing = false;
-				dead = false;
-				gameObject.GetComponent<Animator>().SetBool("Running", true);
-                _state = State.waiting;
-                    //_state = State.active;
+                if (transform.position.x < 13.48f || transform.position.x > 13.52) {
+                    //print ("GOING LEFT OR RIGHT");
+                    transform.position = Vector3.Lerp(transform.position, new Vector3(13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
+                } else if (transform.position.y > -13.99f || transform.position.y < -14.01f) {
+                    gameObject.GetComponent<Animator>().SetInteger("Direction", 2);
+                    transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, -14f, transform.position.z), 3f * Time.deltaTime);
+                } else {
+                    fleeing = false;
+                    dead = false;
+                    gameObject.GetComponent<Animator>().SetBool("Running", true);
+                    _state = State.waiting;
                 }
                 break;
 
             case State.fleeing:
                 Debug.Log("FLEEING" + transform.position);
                 move.ghostAIState = FLEEING;
+                gameObject.GetComponent<CircleCollider2D>().enabled = true;
                 //this.target = gate;
                 this.target = pacMan; // make the target pacMan 
                 _state = State.active;
