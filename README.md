@@ -7,6 +7,7 @@ Implementations:
 
 	-Fixed an audio glitch in framework where after grabbing a power pellet, the music would play forever.
     -Added the ability to move on to a next level. Previously, the player did not get a new screenful of dots once all of them had been consumed
+    -Added new "levels" after you win. In the next level, the ghosts speed increases by one. 
     -The score now carries over between "levels" AKA each time a screenful of dots is created
     -Scoring is displayed horizontally and updated correctly on screen
 
@@ -17,8 +18,4 @@ Implementations:
     - Inky is the most interesting of them all. His behavior is truly random. Inky will randomly switch between all three behaviors (Blinky, Pinky, & Clyde).
     - Ghosts return to gate after being eaten.
     - Ghosts flee from PacMan after a power pellet is eaten. 
-
-Bugs:
-
-	- Ghosts don't respawn after being eaten.
-	- Each Ghost you eat, if you die, when you respawn those ghosts can't touch you for some reason. 
+    - Ghosts respawn after being eaten.

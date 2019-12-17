@@ -135,6 +135,29 @@ public class scoreManager : MonoBehaviour {
                 if (!blinky.GetComponent<GhostAI>().dead) {
                     blinky.GetComponent<Movement>().MSpeed = 5f;
                 }
+
+                if (clyde.GetComponent<GhostAI>().dead) {
+                    clyde.GetComponent<GhostAI>().restart();
+                    WaitABit();
+                    clyde.GetComponent<Movement>().MSpeed = 5f;
+                }
+                if (pinky.GetComponent<GhostAI>().dead) {
+                    pinky.GetComponent<GhostAI>().restart();
+                    WaitABit();
+                    pinky.GetComponent<Movement>().MSpeed = 5f;
+                }
+                if (inky.GetComponent<GhostAI>().dead) {
+                    inky.GetComponent<GhostAI>().restart();
+                    WaitABit();
+                    inky.GetComponent<Movement>().MSpeed = 5f;
+                }
+                if (blinky.GetComponent<GhostAI>().dead) {
+                    blinky.GetComponent<GhostAI>().restart();
+                    WaitABit();
+                    blinky.GetComponent<Movement>().MSpeed = 5f;
+                }
+
+
                 aud.Stop();
                 aud.loop = true;
                 aud.clip = ghostChase;
@@ -161,6 +184,10 @@ public class scoreManager : MonoBehaviour {
             PlayerPrefs.Save();
         }
         highText.text = "High" + "\n" + "Score" + '\n' + string.Format("{0}", highscore);
+    }
+
+    IEnumerator WaitABit() {
+        yield return new WaitForSeconds(2.5f);
     }
 
     public void updateLives(Collider2D collision) {

@@ -241,6 +241,7 @@ public class GhostAI : MonoBehaviour {
         //  pacManPath.Add(pacMan.transform.position);
         switch (_state) {
             case (State.waiting):
+                 Debug.Log("waiting" + transform.position);
                 move.ghostAIState = WAITING;
                 gameObject.GetComponent<CircleCollider2D>().enabled = true;
                 // below is some sample code showing how you deal with animations, etc.
@@ -270,8 +271,13 @@ public class GhostAI : MonoBehaviour {
                 move.ghostAIState = LEAVING;
                 Debug.Log("LEAVING" + transform.position);
                 gameObject.GetComponent<CircleCollider2D>().enabled = true;
-                if (dead) dead = false;
-                if (transform.position.x < 13.48f || transform.position.x > 13.52) {
+                if (dead) {
+                    dead = false;
+                    //restart();
+                    _state = State.waiting;
+                }
+
+                if (transform.position.x < 13.50f || transform.position.x > 13.52) {
                     transform.position = Vector3.Lerp(transform.position, new Vector3(13.5f, transform.position.y, transform.position.z), 3f * Time.deltaTime);
                 }
                 else if (transform.position.y < -11.01f || transform.position.y > -10.99f) {
@@ -335,6 +341,7 @@ public class GhostAI : MonoBehaviour {
                 break;
 
             case State.entering:
+                 Debug.Log("entering" + transform.position);
                 move.ghostAIState = ENTERING;
                             // Leaving this code in here for you.
                 move._dir = Movement.Direction.still;
